@@ -5,3 +5,7 @@ materials/
 python-wf/data
 python-wf/outs
 .Rproj.user
+
+# Pixi
+.pixi/*
+!.pixi/config.toml
