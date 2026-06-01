@@ -1,9 +1,10 @@
 # VS Code
 *.code-workspace
 
-# Materials
+# Materials/docs
 materials/
 docs/
+*notebook.md
 
 # Python-wf
 python-wf/data
