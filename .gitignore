@@ -1,9 +1,13 @@
+# VS Code
+*.code-workspace
+
 # Materials
 materials/
+docs/
 
 # Python-wf
 python-wf/data
-python-wf/outs
+python-wf/results/intermediates
 .Rproj.user
 
 # Pixi
