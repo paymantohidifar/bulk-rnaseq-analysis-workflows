@@ -1,0 +1,1 @@
+python-wf/notebooks/*.ipynb filter=strip-output
