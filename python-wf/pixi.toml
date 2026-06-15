@@ -26,6 +26,7 @@ scikit-learn = ">=1.5.0"
 
 [feature.bio.dependencies]
 pydeseq2 = ">=0.5.4" # Pulled directly via Bioconda for lightning-fast environment resolution
+scanpy = ">=1.11.5,<2"
 
 [environments]
 default = { features = ["bio", "ml"], no-default-feature = false }
