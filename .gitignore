@@ -1,16 +1,17 @@
 # VS Code
 *.code-workspace
 
-# Materials/docs
+# PIXI
+.pixi/*
+!.pixi/config.toml
+
+# Python Caches
+*.pyc
+
+# MISC
 materials/
 docs/
 *notebook.md
-
-# Python-wf
 python-wf/data
 python-wf/results/intermediates
 .Rproj.user
-
-# Pixi
-.pixi/*
-!.pixi/config.toml
