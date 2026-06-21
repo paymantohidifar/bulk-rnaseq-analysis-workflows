@@ -6,7 +6,7 @@
 !.pixi/config.toml
 
 # Python Caches
-*.pyc
+**/__pycache__
 
 # MISC
 materials/
