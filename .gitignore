@@ -10,7 +10,7 @@
 
 # MISC
 materials/
-docs/
+docs/*
 *notebook.md
 python-wf/data
 python-wf/results/intermediates
