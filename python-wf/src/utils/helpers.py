@@ -5,6 +5,9 @@ import pandas as pd
 import scipy.stats as stats
 from itertools import combinations
 from statsmodels.stats.multitest import multipletests
+from pydeseq2.dds import DeseqDataSet
+from pydeseq2.default_inference import DefaultInference
+import scanpy as sc
 
 
 def sanitize_uns_metadata(adata):
@@ -65,3 +68,53 @@ def run_post_hoc_pairwise_pipeline(groups, alpha=0.05):
             )
 
     return results if results else None
+
+
+def prepare_vst_data(counts_filepath, meta_filepath, top_n_genes=100, design="~Pathology", vst_filepath=None, write_to_disk=True, n_cpus=6):
+    """Prepare VST data for downstream analysis.
+    Args:
+        counts_filepath: Path to the counts file.
+        meta_filepath: Path to the metadata file.
+        top_n_genes: Top N genes to keep.
+        design: Design formula.
+        vst_filepath: Path to the VST file.
+        n_cpus: Number of CPUs to use.
+    """
+    
+    # Load and prepare the raw RNA-seq count
+    counts_subset = pd.read_csv(counts_filepath, header=0, index_col=0)   
+    counts_subset.index.name = 'Gene'
+    keep = (counts_subset.sum(axis='columns') >= top_n_genes)
+    counts_subset = counts_subset[keep].copy()
+    counts_subset = counts_subset.transpose().astype(int)
+
+    # Load the associated sample metadata (e.g., cell line names, pathology, etc.)
+    meta_subset = pd.read_csv(meta_filepath, header=0, index_col=0)
+
+    
+    
+    # Initialize inference engine with parallel processing
+    inference = DefaultInference(n_cpus=n_cpus)
+
+    # Initialize the DeseqDataSet with a pathology-based experimental design
+    dds = DeseqDataSet(
+        counts=counts_subset,
+        metadata=meta_subset,
+        design=design,
+        refit_cooks=True,  # Detect and replace outliers using Cook's distance
+        inference=inference,
+    )
+
+    # Run the dispersion estimation and normalization pipeline
+    dds.deseq2()
+    dds.vst()  
+
+    # Sanitize metadata to prevent HDF5 serialization errors, then write to disk
+    dds = sanitize_uns_metadata(dds)
+    if write_to_disk:
+        dds.write_h5ad(vst_filepath, compression="gzip")
+        print(f"Pipeline complete. VST object cached to: {vst_filepath}")
+    else:
+        print("Pipeline complete. VST object not cached to disk.")
+
+    return dds
