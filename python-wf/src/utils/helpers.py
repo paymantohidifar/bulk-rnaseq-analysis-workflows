@@ -9,6 +9,14 @@ from pydeseq2.dds import DeseqDataSet
 from pydeseq2.default_inference import DefaultInference
 import scanpy as sc
 
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+from scipy.cluster.hierarchy import fcluster, linkage
+from scipy.spatial.distance import pdist
+from sklearn.preprocessing import StandardScaler
+
 
 def sanitize_uns_metadata(adata):
     """Convert unsupported pandas Series in .uns to dictionaries to prevent HDF5 IO errors."""
