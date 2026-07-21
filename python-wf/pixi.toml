@@ -1,7 +1,7 @@
 [workspace]
 name = "bulk-rnaseq-analysis"
 version = "0.1.0"
-description = "A collection of scripts and notebooks for bulk RNA-seq data analysis, including preprocessing, differential expression analysis, and visualization."
+description = "A collection of scripts and notebooks for bulk RNA-seq data analysis of lung cancer cell lines."
 authors = ["Payman Tohidifar <payman.tohidifar@gmail.com>"]
 channels = ["conda-forge", "bioconda"] 
 platforms = ["linux-64", "osx-arm64", "win-64"]
