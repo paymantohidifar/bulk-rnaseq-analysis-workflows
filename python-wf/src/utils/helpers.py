@@ -113,9 +113,8 @@ def prepare_vst_data(counts_filepath, meta_filepath, top_n_genes=100, design="~P
         inference=inference,
     )
 
-    # Run the dispersion estimation and normalization pipeline
-    dds.deseq2()
-    dds.vst()  
+    # Run VST
+    dds.vst(use_design=False, fit_type='parametric')  
 
     # Sanitize metadata to prevent HDF5 serialization errors, then write to disk
     dds = sanitize_uns_metadata(dds)
