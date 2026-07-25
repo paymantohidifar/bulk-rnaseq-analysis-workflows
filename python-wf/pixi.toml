@@ -21,6 +21,7 @@ requests = ">=2.32.0"
 ipywidgets = ">=8.1.2"
 pixi-kernel = "*"
 fastcluster = ">=1.3.0,<2"
+adjusttext = ">=1.4.0,<2"
 
 [feature.ml.dependencies]
 scikit-learn = ">=1.5.0"
@@ -28,9 +29,11 @@ scikit-learn = ">=1.5.0"
 [feature.bio.dependencies]
 pydeseq2 = ">=0.5.4"
 scanpy = ">=1.11.5,<2"
+pybiomart = ">=0.2.0,<0.3"
 
 [feature.bio.pypi-dependencies]
 pycomplexheatmap = ">=1.8.5, <2"
+bioinfokit = ">=2.1.4, <3"
 
 [environments]
 default = { features = ["bio", "ml"], no-default-feature = false }
