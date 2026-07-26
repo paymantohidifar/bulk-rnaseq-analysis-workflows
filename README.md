@@ -14,7 +14,7 @@ Below are representative snapshots illustrating sample partitioning, gene-wise v
   <img src="./python-wf/results/figures/PCA_clusters.png" width="50%" alt="PCA Clusters" />
 </p>
 <p align="center">
-  <em><b>Figure 1.</b> Principal Component Analysis showing distinct separation between lung cancer cell line based on three main TCGA subtypes.</em>
+  <em><b>Figure 1.</b> Principal Component Analysis showing distinct separation of lung cancer cell lines across three main TCGA subtypes.</em>
 </p>
 
 <br/>
