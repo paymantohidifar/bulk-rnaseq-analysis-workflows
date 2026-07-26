@@ -11,7 +11,7 @@ Below are representative snapshots illustrating sample partitioning, gene-wise v
 ### Unsupervised Principal Component Analysis (PCA)
 
 <p align="center">
-  <img src="./python-wf/results/figures/PCA_clusters.png" width="30%" alt="PCA Clusters" />
+  <img src="./python-wf/results/figures/PCA_clusters.png" width="50%" alt="PCA Clusters" />
 </p>
 <p align="center">
   <em><b>Figure 1.</b> Principal Component Analysis showing distinct separation between lung cancer cell line based on three main TCGA subtypes.</em>
@@ -20,29 +20,29 @@ Below are representative snapshots illustrating sample partitioning, gene-wise v
 <br/>
 
 <p align="center">
-  <img src="./python-wf/results/figures/top_vst_deg_pca.png" width="50%" alt="Top VST DEG PCA" />
+  <img src="./python-wf/results/figures/top_vst_deg_pca.png" width="70%" alt="Top VST DEG PCA" />
 </p>
 <p align="center">
-  <em><b>Figure 2:</b> PCA loading vector projection highlighting top variance-stabilized genes driving sample separation along major principal components.</em>
+  <em><b>Figure 2.</b> PCA loading vector projection highlighting top variance-stabilized genes driving sample separation along major principal components.</em>
 </p>
 
 ### Unsupervised Hierarchical Clustering
 
 <p align="center">
-  <img src="./python-wf/results/figures/hierarchical_clustering_heatmap.png" width="50%" alt="Hierarchical Clustering Heatmap" />
+  <img src="./python-wf/results/figures/hierarchical_clustering_heatmap.png" width="70%" alt="Hierarchical Clustering Heatmap" />
 </p>
 <p align="center">
-  <em><b>Figure 3:</b> Clustered expression heatmap displaying standardized VST expression across top variable transcripts, revealing co-regulated gene modules across three main TCGA subtypes.</em>
+  <em><b>Figure 3.</b> Clustered expression heatmap displaying standardized VST expression across top variable transcripts, revealing co-regulated gene modules across three main TCGA subtypes.</em>
 </p>
 
 
 ### Differential Expression: Volcano Plot
 
 <p align="center">
-  <img src="./python-wf/results/figures/Volcano_plot.png" width="50%" alt="Volcano Plot" />
+  <img src="./python-wf/results/figures/Volcano_plot.png" width="70%" alt="Volcano Plot" />
 </p>
 <p align="center">
-  <em><b>Figure 4:</b> Volcano plot of differential gene expression comparing SCLC against LUAD/LUSC cohorts. Top upregulated and downregulated hits are highlighted.</em>
+  <em><b>Figure 4.</b> Volcano plot of differential gene expression comparing SCLC against LUAD/LUSC cohorts. Top upregulated and downregulated hits are highlighted.</em>
 </p>
 
 
