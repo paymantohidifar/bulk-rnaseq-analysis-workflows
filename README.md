@@ -1,2 +1,4 @@
-# bulk-rnaseq-analysis-workflows
-Bulk RNAseq analysis workflows in Python and R
+# Lung Cancer Bulk RNAseq Analysis Workflows
+
+Description
+
