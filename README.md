@@ -1,4 +1,4 @@
-# Lung Cancer Bulk RNA-Seq Analysis Pipeline
+# Lung Cancer Bulk RNA-Seq Data Analysis Pipeline
 
 An end-to-end computational biology workflow for analyzing bulk RNA-sequencing data from the Cancer Cell Line Encyclopedia (CCLE). This pipeline guides users from raw count matrix processing and unsupervised exploratory analysis (PCA, hierarchical clustering) through differential expression modeling and downstream functional pathway enrichment.
 
