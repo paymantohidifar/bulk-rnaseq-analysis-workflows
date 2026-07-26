@@ -1,4 +1,4 @@
-# Lung Cancer Bulk RNA-Seq Analysis Pipeline in Python
+# Lung Cancer Bulk RNA-Seq Data Analysis Pipeline in Python
 
 A end-to-end computational biology workflow for analyzing bulk RNA-sequencing data from the Cancer Cell Line Encyclopedia (CCLE). This pipeline guides users from raw counts data processing and unsupervised exploratory analysis (PCA, hierarchical clustering) to differential expression modeling (`PyDESeq2`) and downstream functional pathway enrichment.
 
