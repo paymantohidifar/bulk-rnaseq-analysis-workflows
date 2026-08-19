@@ -1,0 +1,322 @@
+---
+title: "RNA-Seq Exploratory Data Analysis"
+author: "Your Name"
+format:
+  html:
+    self-contained: true
+  pdf:
+    toc: true
+    number-sections: true
+    include-in-header:
+      text: |
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+        \DefineVerbatimEnvironment{OutputCode}{Verbatim}{breaklines,commandchars=\\\{\}}
+---
+
+# EDA On Your Own
+
+Now that you have taken a guided tour of EDA for RNA-seq datasets, I challenge you to do the entire thing again on your own.
+
+I want you to explore [stomach]{.underline} cancer cell lines in CCLE. How many biologically distinct groups can you reasonably define? What do the gene expression profiles of each group tell us about the biology of each group?
+
+# Load Libraries
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(ggrepel)
+library(patchwork)
+library(scales)
+library(ComplexHeatmap)
+library(EnhancedVolcano)
+library(DESeq2)
+```
+
+# Prepare Data
+
+```{r}
+ccle_counts <- read.csv("/cloud/project/outs/1_ccle_counts.csv", row.names = 1)
+ccle_meta <- read.csv("/cloud/project/outs/1_ccle_meta.csv")
+```
+
+```{r}
+unique(ccle_meta$Site_Primary)
+```
+
+```{r}
+index_a <- ccle_meta$Site_Primary %in% c("stomach")
+index_b = ccle_meta$Pathology != ''
+ccle_counts_subset <- ccle_counts[,index_a & index_b]
+ccle_meta_subset <- ccle_meta[index_a & index_b,]
+```
+
+```{r}
+table(ccle_meta_subset$tcga_code)
+```
+
+# Principal Component Analysis
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = data.frame(ccle_counts_subset),
+                              colData = ccle_meta_subset,
+                              design = ~ Pathology)
+dds <- dds[rowSums(counts(dds)) >= 100,]
+vsd <- vst(dds, blind = FALSE)
+```
+
+```{r}
+variances <- rowVars(assay(vsd))
+top_var_genes <- order(variances, decreasing = TRUE)[1:500]
+high_var_mat <- assay(vsd)[top_var_genes,]
+pca_res <- prcomp(t(high_var_mat), center = TRUE, scale = FALSE)
+
+explained_variance <- pca_res$sdev^2 / sum(pca_res$sdev^2) * 100
+
+# PC1 vs PC2
+df_pc12 <- data.frame(PC1 = pca_res$x[, 1], PC2 = pca_res$x[, 2], ccle_meta_subset)
+
+ggplot(df_pc12, aes(x = PC1, y = PC2, color = Pathology)) +
+  geom_point(size = 3, alpha = 0.5) +
+  theme_classic() +
+  labs(x = paste0("PC1: ", round(explained_variance[1], 1), "% variance"), 
+       y = paste0("PC2: ", round(explained_variance[2], 1), "% variance"))
+
+# PC3 vs PC4
+df_pc34 <- data.frame(PC3 = pca_res$x[, 3], PC4 = pca_res$x[, 4], ccle_meta_subset)
+
+ggplot(df_pc34, aes(x = PC3, y = PC4, color = Pathology)) +
+  geom_point(size = 3, alpha = 0.5) +
+  theme_classic() +
+  labs(x = paste0("PC3 (", round(explained_variance[3], 2), "%)"), 
+       y = paste0("PC4 (", round(explained_variance[4], 2), "%)"))
+
+# Elbow plot
+df_variance <- data.frame(PC = seq_len(25), Variance = explained_variance[1:25])
+
+ggplot(df_variance, aes(x = PC, y = Variance)) +
+  geom_point(size = 2) +
+  theme_minimal() +
+  labs(title = "Elbow Plot (Top 25 PCs)", x = "Principal Component", y = "Explained Variance (%)")
+```
+
+```{r}
+variances <- rowVars(assay(vsd))
+top_var_genes <- order(variances, decreasing = TRUE)[1:500]
+high_var_mat <- assay(vsd)[top_var_genes,]
+pca_res <- prcomp(t(high_var_mat), center = TRUE, scale = FALSE)
+df_pca <- data.frame(PC1 = pca_res$x[, 1], PC2 = pca_res$x[, 2], ccle_meta_subset)
+
+pc1_loadings <- pca_res$rotation[, 1]
+pc1_sorted_loadings <- sort(pc1_loadings, decreasing = TRUE)
+pc1_top_genes <- names(head(pc1_sorted_loadings, n = 6))
+pc1_top_genes_vsd <- data.frame(t(assay(vsd)[pc1_top_genes, ]))
+
+df_genes_long <- data.frame(
+  pc1_top_genes_vsd,  
+  df_pca[, c("PC1", "PC2", "Pathology")]
+)
+
+df_long <- pivot_longer(
+  df_genes_long,
+  cols = all_of(pc1_top_genes),
+  names_to = "Gene",
+  values_to = "Expression"
+)
+
+ggplot(df_long, aes(x = PC1, y = PC2, color = Expression)) +
+  geom_point(size = 2, alpha = 0.6) +
+  scale_color_gradient(low = "blue", high = "red") +
+  theme_classic() +
+  labs(x = paste0("PC1: ", round(explained_variance[1], 1), "% variance"), 
+       y = paste0("PC2: ", round(explained_variance[2], 1), "% variance"),
+       color = "Expression (VST)") +
+  facet_wrap(~ Gene)
+```
+
+```{r}
+pc2_loadings <- pca_res$rotation[, 2]
+pc2_sorted_loadings <- sort(pc2_loadings, decreasing = TRUE)
+pc2_top_genes <- names(head(pc2_sorted_loadings, n = 6))
+pc2_top_genes_vsd <- data.frame(t(assay(vsd)[pc2_top_genes, ]))
+
+df_genes_long <- data.frame(
+  pc2_top_genes_vsd,  
+  df_pca[, c("PC1", "PC2", "Pathology")]
+)
+
+df_long <- pivot_longer(
+  df_genes_long,
+  cols = all_of(pc2_top_genes),
+  names_to = "Gene",
+  values_to = "Expression"
+)
+
+ggplot(df_long, aes(x = PC1, y = PC2, color = Expression)) +
+  geom_point(size = 2, alpha = 0.6) +
+  scale_color_gradient(low = "blue", high = "red") +
+  theme_classic() +
+  labs(x = paste0("PC1: ", round(explained_variance[1], 1), "% variance"), 
+       y = paste0("PC2: ", round(explained_variance[2], 1), "% variance"),
+       color = "Expression (VST)") +
+  facet_wrap( ~ Gene)
+```
+
+# Hierarchical Clustering
+
+```{r}
+high_var_genes <- head(order(rowVars(assay(vsd)), decreasing = TRUE), 500)
+high_var_mat <- assay(vsd)[high_var_genes,]
+
+hc <- hclust(dist(t(high_var_mat)), method = "complete")
+clusters <- cutree(hc, k = 2)
+
+Heatmap(high_var_mat,
+        clustering_distance_columns = "euclidean",
+        clustering_method_columns = "complete",
+        clustering_distance_rows = "euclidean",
+        clustering_method_rows = "complete",
+        show_row_names = FALSE,
+        show_column_names = FALSE,
+        name = "VST_Counts",
+        column_split = clusters)
+
+pca_res <- prcomp(t(high_var_mat), center = TRUE, scale = FALSE)
+explained_variance <- pca_res$sdev^2 / sum(pca_res$sdev^2) * 100
+df_pca <- data.frame(PC1 = pca_res$x[, 1], PC2 = pca_res$x[, 2], ccle_meta_subset)
+df_pca$Cluster <- factor(clusters)
+
+ggplot(df_pca, aes(x = PC1, y = PC2, color = Cluster)) +
+  geom_point(size = 3, alpha = 0.5) +
+  scale_color_manual(values = hue_pal()(length(unique(clusters)))) +
+  theme_classic() +
+  labs(x = paste0("PC1: ", round(explained_variance[1], 1), "% variance"), 
+       y = paste0("PC2: ", round(explained_variance[2], 1), "% variance"),
+       color = "Cluster")
+```
+
+# Differential Expression Analysis
+
+```{r}
+high_var_genes <- head(order(rowVars(assay(vsd)), decreasing = TRUE), 500)
+high_var_mat <- assay(vsd)[high_var_genes,]
+
+hc <- hclust(dist(t(high_var_mat)), method = "complete")
+clusters <- cutree(hc, k = 2)
+ccle_meta_subset$Cluster <- factor(clusters)
+
+dds <- DESeqDataSetFromMatrix(countData = data.frame(ccle_counts_subset),
+                              colData = ccle_meta_subset,
+                              design = ~ Cluster)
+dds$Cluster <- relevel(dds$Cluster, ref = "2")
+dds <- dds[rowSums(counts(dds)) >= 100,]
+dds <- DESeq(dds)
+```
+
+```{r}
+res <- results(dds)
+print(head(res, 20))
+```
+
+```{r}
+summary(res)
+```
+
+```{r}
+res_reordered <- res %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column(var = "gene_symbol") %>%
+  filter(padj < 0.001) %>%
+  arrange(desc(abs(log2FoldChange)))
+
+print(head(res_reordered, 20))
+```
+
+```{r}
+degs <- c("MUC17", "LYZ", "REG4", "MAGEA10", "ADAMTS12", "NPFFR2")
+degs_vsd <- data.frame(t(assay(vsd)[degs, ]))
+
+variances <- rowVars(assay(vsd))
+top_var_genes <- order(variances, decreasing = TRUE)[1:500]
+high_var_mat <- assay(vsd)[top_var_genes,]
+pca_res <- prcomp(t(high_var_mat), center = TRUE, scale = FALSE)
+df_pca <- data.frame(PC1 = pca_res$x[, 1], PC2 = pca_res$x[, 2], ccle_meta_subset)
+
+df_genes_long <- data.frame(
+  degs_vsd,
+  df_pca[, c("PC1", "PC2", "tcga_code")]
+)
+
+df_long <- pivot_longer(
+  df_genes_long,
+  cols = all_of(degs),
+  names_to = "Gene",
+  values_to = "Expression"
+)
+
+ggplot(df_long, aes(x = PC1, y = PC2, color = Expression)) +
+  geom_point(size = 2, alpha = 0.6) +
+  scale_color_gradient(low = "blue", high = "red") +
+  theme_classic() +
+  labs(x = paste0("PC1: ", round(explained_variance[1], 1), "% variance"), 
+       y = paste0("PC2: ", round(explained_variance[2], 1), "% variance"),
+       color = "Expression (VST)") +
+  facet_wrap(~ Gene)
+```
+
+```{r}
+top_degs_up <- res_reordered %>%
+  arrange(desc(log2FoldChange)) %>%
+  head(10)
+
+top_degs_down <- res_reordered %>%
+  arrange(log2FoldChange) %>%
+  head(10)
+
+genes_to_label <- c(top_degs_up$gene, top_degs_down$gene)
+
+EnhancedVolcano(res_reordered,
+                x = "log2FoldChange",
+                y = "padj",
+                lab = res_reordered$gene,
+                selectLab = genes_to_label,
+                pCutoff = 0.00001,
+                FCcutoff = 2,
+                labSize = 3,
+                title = "Cluster 1 vs Cluster 2 DEGs",
+                subtitle = "",
+                caption = "",
+                pointSize = 1,
+                colAlpha = 0.3,
+                drawConnectors = TRUE,
+                widthConnectors = 0.5,
+                max.overlaps = Inf
+                ) +
+  theme_classic() +
+  theme(legend.position = "none")
+```
+
+# Interpretation
+
+How many biologically distinct groups of stomach cancer cell lines did you define? What do the gene expression profiles of each group tell us about the biology of each group?
+
+```{r}
+# Your written response here
+
+# The gene expression profile of Cluster 1 indicates involvement of:
+  # MAGEA10, MAGEA4 are known cancer/testis antigens.
+  # Cell migration, extracelluar matrix remodeling, epithelial-mesenchymal transition (EMT): WNT5A, BASP1, CRISPLD1, KANK4, ADAMTS12, ROBO2
+  # Signaling pathways related to cell growth and survival: NPFFR2
+
+# The gene expression profile of Cluster 2 indicates involvement of:
+  # Mucosal immunity and inflammation: LYZ, REG4, and MUC17 are involved in mucosal defense and protection, which are often activated in gastrointestinal cancer.
+  # Cell adhesion and metastasis: CEACAM5 and AGR3 are involved in adhesion and cell-cell interactions, likely influencing cancer metastasis.
+  # LGALS4 is involved in modulating the tumor microenvironment, influencing cell adhesion and immune response, particularly by regulating T-cell activation
+```
+
+# sessionInfo()
+
+```{r}
+sessionInfo()
+```
