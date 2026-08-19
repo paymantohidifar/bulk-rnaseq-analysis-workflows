@@ -12,6 +12,11 @@
 materials/
 docs/*
 *notebook.md
-python-wf/data
 python-wf/results/intermediates
 .Rproj.user
+
+# Raw data
+python-wf/data
+!python-wf/data/.gitkeep
+r-wf/data
+!r-wf/data/.gitkeep
